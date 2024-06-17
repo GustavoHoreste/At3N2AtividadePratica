@@ -28,35 +28,6 @@ public class Library {
         this.jsonModel = new JsonModel(this.gson);
     }
 
-    public void makeQuestion() throws IOException, ClassNotFoundException {
-        System.out.println("Making question...");
-
-        String choice;
-        StringBuilder questions = new StringBuilder();
-        questions.append("Escolha uma ação a ser executada:\n")
-                .append("1. Listar livros\n")
-                .append("2. Alugar livro\n")
-                .append("3. Devolver livro\n")
-                .append("4. Cadastrar livro\n")
-                .append("5. livros Aluagados\n")
-                .append("6. Sair\n")
-                .append("Opção: ");
-
-        sendMessenger(questions.toString());
-
-        do {
-            choice = this.reciveMensager();
-
-            if (choice.isEmpty() || !choice.matches("[1-6]")) {
-                System.out.println("Opção inválida: Repetindo pergunta");
-                this.sendMessenger("Opção inválida, por favor, escreva uma Opção válida.");
-            }
-        } while (choice.isEmpty() || !choice.matches("[1-6]"));
-
-        int valurConverted = Integer.parseInt(choice);
-        this.startAction(StateEnum.values()[valurConverted - 1]);
-    }
-
     public void startAction(StateEnum choice) throws IOException, ClassNotFoundException {
         this.updateBooks();
         this.sendMessenger(this.choiceDetail(choice.toString()));
@@ -83,52 +54,89 @@ public class Library {
                 getUserBooks();
             }
             case SAIR -> {
-                System.out.println("Sair");
-                sendMessenger("Saindo");
-                System.exit(0);
+                actionExit();
             }
         }
 
-        this.makeQuestion(); //Renicia o fluxo
+        this.awaitResponse();
+        this.menu(); //Renicia o fluxo
+    }
+
+    public void actionExit() throws IOException {
+        System.out.println("Sair");
+        this.sendMessenger("Saindo");
+        System.exit(0);
+    }
+
+    public void menu() throws IOException, ClassNotFoundException {
+        System.out.println("\u001B[36mMaking question...\u001B[0m");
+
+        String choice;
+        StringBuilder questions = new StringBuilder();
+        questions.append("\u001B[33mEscolha uma ação a ser executada:\n")
+                .append("\u001B[35m1. Listar livros\n")
+                .append("2. Alugar livro\n")
+                .append("3. Devolver livro\n")
+                .append("4. Cadastrar livro\n")
+                .append("5. livros Alugados\n")
+                .append("6. Sair\n")
+                .append("\u001B[33mOpção: \u001B[0m");
+
+        sendMessenger(questions.toString());
+
+        do {
+            choice = this.receiveMensager();
+
+            if (choice.isEmpty() || !choice.matches("[1-6]")) {
+                System.out.println("\u001B[31mOpção inválida: Repetindo pergunta\u001B[0m");
+                this.sendMessenger("\u001B[31mOpção inválida, por favor, escreva uma Opção válida.\u001B[0m");
+            }
+        } while (choice.isEmpty() || !choice.matches("[1-6]"));
+
+        int valueConverted = Integer.parseInt(choice);
+        this.startAction(StateEnum.values()[valueConverted - 1]);
     }
 
 
-    //Print de todos os objetos no json
+    public void awaitResponse() throws IOException, ClassNotFoundException {
+        String response;
+        do {
+            this.sendMessenger("Deseja continuar Execução? [S|N]\n");
+            response = this.receiveMensager();
+
+            if (!isValidResponse(response)) {
+                this.sendMessenger("Valor inválido. Digite 'S' ou 'N'.");
+            }
+        } while (!isValidResponse(response));
+
+        if (response.equals("N")) {
+            actionExit();
+        }
+    }
+
+    private boolean isValidResponse(String response) {
+        return response != null && (response.equalsIgnoreCase("S") || response.equalsIgnoreCase("N"));
+    }
+
     public void updateBooks(){
         books = (ArrayList<Book>) jsonModel.getDataFromJson(BOOKS_PATH);
         rentedBooks = (ArrayList<Book>) jsonModel.getDataFromJson(USER_RENT_PATH);
     }
 
-    public void removeBook(Book book){
-        System.out.println("Removing book " + book.getTitle());
-        books.remove(book);
-    }
-
     public void addBook() throws IOException, ClassNotFoundException {
         sendMessenger("Titulo: ");
-        String title = reciveMensager();
+        String title = receiveMensager();
         sendMessenger("Genero: ");
-        String genre = reciveMensager();
+        String genre = receiveMensager();
         sendMessenger("Autor: ");
-        String author = reciveMensager();
+        String author = receiveMensager();
         sendMessenger("Quantidade: ");
-        String copies = reciveMensager();
+        String copies = receiveMensager();
 
         Book book = new Book(title, author, genre, Integer.parseInt(copies));
         books.add(book);
 
         jsonModel.saveDataToJson(this.books, BOOKS_PATH);
-    }
-
-    public void sendMessenger(String message) throws IOException {
-        out.writeObject(message);
-        out.flush();
-    }
-
-    public String reciveMensager() throws IOException, ClassNotFoundException {
-        String mensager = (String) in.readObject();
-        System.out.println(mensager);
-        return mensager;
     }
 
     public void toRent() throws IOException, ClassNotFoundException {
@@ -145,9 +153,10 @@ public class Library {
             sendMessenger(books.toString());
 
             this.sendMessenger("Digite o nome do livro: ");
-            name = this.reciveMensager().trim();
+            name = this.receiveMensager().trim();
 
             boolean bookFound = false;
+
             for (Book book : books) {
                 if (book.getTitle().equalsIgnoreCase(name)) {
                     currentBook = book;
@@ -156,21 +165,16 @@ public class Library {
                 }
             }
 
-            if (!bookFound) {
-                System.out.println("Nome inválido: " + name);
-                sendMessenger("[!] Nome inválido");
+            if (!bookFound || currentBook.getCopies() <= 0) {
+                System.out.println("Livro inválido: " + currentBook.getCopies() + currentBook.getTitle());
+                sendMessenger("[!] Livro inválido" + currentBook.getTitle() + " " + currentBook.getCopies());
             }
 
         }while (currentBook == null);
 
-        if (currentBook.getCopies() <= 0) {
-            sendMessenger("Livro indisponivel");
-            return;
-        }
-
         do {
             sendMessenger("Qual a quantidade: ");
-            quantity = Integer.parseInt(reciveMensager());
+            quantity = Integer.parseInt(receiveMensager());
 
             if (quantity > currentBook.getCopies() || quantity <= 0) {
                 this.sendMessenger("Quantidade: " + quantity + " inválida");
@@ -183,6 +187,65 @@ public class Library {
         updateUserBook(currentBook, quantity);
 
         sendMessenger("Livro alugado com sucesso: " + currentBook.toStringName());
+    }
+
+    public void giveBack() throws IOException, ClassNotFoundException {
+        if (rentedBooks.isEmpty()) {
+            sendMessenger("Você não tem livros Alugados.");
+            return;
+        }
+
+        StringBuilder rentedBooksList = new StringBuilder("Livros alugados:\n");
+        for (Book book : rentedBooks) {
+            rentedBooksList
+                    .append(book.toStringName());
+        }
+        sendMessenger(rentedBooksList.toString());
+
+        // Perguntar qual livro devolver
+        Book bookToReturn = null;
+        String bookTitle;
+        do {
+            sendMessenger("Digite o nome do livro que deseja devolver: ");
+            bookTitle = receiveMensager().trim();
+
+            for (Book book : rentedBooks) {
+                if (book.getTitle().equalsIgnoreCase(bookTitle)) {
+                    bookToReturn = book;
+                    break;
+                }
+            }
+
+            if (bookToReturn == null) {
+                sendMessenger("[!] Nome inválido");
+            }
+        } while (bookToReturn == null);
+
+        int quantityToReturn;
+        do {
+            sendMessenger("Digite a quantidade que deseja devolver: ");
+            quantityToReturn = Integer.parseInt(receiveMensager());
+
+            if (quantityToReturn > bookToReturn.getCopies() || quantityToReturn <= 0) {
+                sendMessenger("Quantidade inválida: " + quantityToReturn);
+            }
+        } while (quantityToReturn > bookToReturn.getCopies() || quantityToReturn <= 0);
+
+        bookToReturn.setCopies(bookToReturn.getCopies() - quantityToReturn);
+        if (bookToReturn.getCopies() == 0) {
+            rentedBooks.remove(bookToReturn);
+        }
+        jsonModel.saveDataToJson(rentedBooks, USER_RENT_PATH);
+
+        for (Book book : books) {
+            if (book.getTitle().equalsIgnoreCase(bookTitle)) {
+                book.setCopies(book.getCopies() + quantityToReturn);
+                updateBook(book);
+                break;
+            }
+        }
+
+        sendMessenger("Livro devolvido com sucesso: " + bookToReturn.toStringName());
     }
 
     public void updateBook(Book book) {
@@ -201,78 +264,39 @@ public class Library {
         jsonModel.saveDataToJson(rentedBooks, USER_RENT_PATH); // salvando em user
     }
 
-    public void giveBack() throws IOException, ClassNotFoundException {
-        if (rentedBooks.isEmpty()) {
-            sendMessenger("Você não tem livros alugados.");
-            return;
-        }
-
-        StringBuilder rentedBooksList = new StringBuilder("Livros alugados:\n");
-        for (Book book : rentedBooks) {
-            rentedBooksList.append(book.toStringName()).append(" - Quantidade: ").append(book.getCopies()).append("\n");
-        }
-        sendMessenger(rentedBooksList.toString());
-
-        // Perguntar qual livro devolver
-        Book bookToReturn = null;
-        String bookTitle;
-        do {
-            sendMessenger("Digite o nome do livro que deseja devolver: ");
-            bookTitle = reciveMensager().trim();
-
-            for (Book book : rentedBooks) {
-                if (book.getTitle().equalsIgnoreCase(bookTitle)) {
-                    bookToReturn = book;
-                    break;
-                }
-            }
-
-            if (bookToReturn == null) {
-                sendMessenger("[!] Nome inválido");
-            }
-        } while (bookToReturn == null);
-
-        // Perguntar a quantidade a devolver
-        int quantityToReturn;
-        do {
-            sendMessenger("Digite a quantidade que deseja devolver: ");
-            quantityToReturn = Integer.parseInt(reciveMensager());
-
-            if (quantityToReturn > bookToReturn.getCopies() || quantityToReturn <= 0) {
-                sendMessenger("Quantidade inválida: " + quantityToReturn);
-            }
-        } while (quantityToReturn > bookToReturn.getCopies() || quantityToReturn <= 0);
-
-        // Atualizar a quantidade no arquivo de livros alugados
-        bookToReturn.setCopies(bookToReturn.getCopies() - quantityToReturn);
-        if (bookToReturn.getCopies() == 0) {
-            rentedBooks.remove(bookToReturn);
-        }
-        jsonModel.saveDataToJson(rentedBooks, USER_RENT_PATH);
-
-        // Atualizar a quantidade no arquivo de livros da biblioteca
-        for (Book book : books) {
-            if (book.getTitle().equalsIgnoreCase(bookTitle)) {
-                book.setCopies(book.getCopies() + quantityToReturn);
-                updateBook(book);
-                break;
-            }
-        }
-
-        sendMessenger("Livro devolvido com sucesso: " + bookToReturn.toStringName());
+    public void sendMessenger(String message) throws IOException {
+        out.writeObject(message);;
+        out.flush();
     }
 
+    public String receiveMensager() throws IOException, ClassNotFoundException {
+        String mensager = (String) in.readObject();
+        System.out.println("Mensgam recebida: " + mensager);
+        return mensager;
+    }
 
     public void getBooks() throws IOException {
-        this.sendMessenger(books.toString());
+        StringBuilder sb = new StringBuilder();
+        for (Book book : books) {
+            sb.append(book.toString());
+        }
+        this.sendMessenger(sb.toString());
     }
 
     public void getUserBooks() throws IOException {
-        this.sendMessenger(rentedBooks.toString());
+        StringBuilder sb = new StringBuilder();
+        for (Book book : rentedBooks) {
+            sb.append(book.toString());
+        }
+        this.sendMessenger(sb.toString());
     }
 
-    public String choiceDetail(String choice){
-        String value = ("+========================+\n" + ("+\t\t  " + choice + "\t\t  +\n") + ("+========================+\n"));
+    public String choiceDetail(String choice) {
+        String value = (
+                "\u001B[1m\u001B[37m" + "+========================+" + "\u001B[0m\n" +
+                        "\u001B[32m" + "|      \t" + "\u001B[1m" + choice + "\u001B[0m\u001B[32m" + "       \t|" + "\u001B[0m\n" +
+                        "\u001B[1m\u001B[37m" + "+========================+" + "\u001B[0m\n"
+        );
         return value;
     }
 }
