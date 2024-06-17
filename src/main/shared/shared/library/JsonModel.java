@@ -1,28 +1,42 @@
 package shared.library;
 
-import com.google.gson.Gson;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
+
+import java.io.*;
+import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import com.google.gson.JsonObject;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 
 public class JsonModel {
-    private static final String path = "src/main/resources/livros.json";
     Gson gson;
 
-    public JsonModel() {
-        this.gson = new Gson();
+    public JsonModel(Gson gson) {
+        this.gson = gson;
     }
 
     //Funcao que pega os dados do arquivo JSON
-    public JsonObject getDataFromJson(){
+    public List<Book> getDataFromJson(String path) {
         try(FileReader fileReader = new FileReader(path)){
-            System.out.println(this.gson.fromJson(fileReader, JsonObject.class));
-            return this.gson.fromJson(fileReader, JsonObject.class);
+            Type bookListType = new TypeToken<List<Book>>(){}.getType();
+            return gson.fromJson(fileReader, bookListType);
         } catch (FileNotFoundException e) {
+            System.out.println("File not found");
             throw new RuntimeException(e);
         } catch (IOException e) {
+            System.out.println("I/O Error");
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void saveDataToJson(ArrayList<Book> books, String path){
+        try(FileWriter fileWriter = new FileWriter(path)){
+           gson.toJson(books, fileWriter);
+        }catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
