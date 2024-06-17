@@ -1,2 +1,4 @@
-package server.library;public class ServerHandler {
+package server.library;
+
+public class ServerHandler {
 }
