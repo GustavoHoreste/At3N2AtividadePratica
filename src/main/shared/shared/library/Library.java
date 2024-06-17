@@ -58,7 +58,7 @@ public class Library {
             }
         }
 
-        this.awaitResponse();
+//        this.awaitResponse();
         this.menu(); //Renicia o fluxo
     }
 
@@ -140,17 +140,13 @@ public class Library {
     }
 
     public void toRent() throws IOException, ClassNotFoundException {
-        ArrayList<String> filterBooks = new ArrayList<>();
         Book currentBook = null;
         int quantity;
         String name;
 
-        for (Book book : books) {
-            filterBooks.add(book.toStringName());
-        }
+        this.getBooks();
 
         do{
-            sendMessenger(books.toString());
 
             this.sendMessenger("Digite o nome do livro: ");
             name = this.receiveMensager().trim();
@@ -202,7 +198,6 @@ public class Library {
         }
         sendMessenger(rentedBooksList.toString());
 
-        // Perguntar qual livro devolver
         Book bookToReturn = null;
         String bookTitle;
         do {
@@ -259,9 +254,17 @@ public class Library {
     }
 
     private void updateUserBook(Book book, int copies) throws IOException {
-        book.setCopies(copies);
-        rentedBooks.add(book);
-        jsonModel.saveDataToJson(rentedBooks, USER_RENT_PATH); // salvando em user
+        int index = rentedBooks.indexOf(book);
+        System.out.println(index);
+        if (index >= 0) {
+            rentedBooks.set(index, book);
+            jsonModel.saveDataToJson(rentedBooks, USER_RENT_PATH);
+            System.out.print("JsonSalvo no Usuario: ");
+        } else {
+            rentedBooks.add(book);
+            jsonModel.saveDataToJson(rentedBooks, USER_RENT_PATH);
+            System.out.println("Livro novo. Salvando..");
+        }
     }
 
     public void sendMessenger(String message) throws IOException {

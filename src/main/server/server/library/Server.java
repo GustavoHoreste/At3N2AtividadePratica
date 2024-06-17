@@ -1,14 +1,12 @@
 package server.library;
 
 import shared.library.Library;
-import shared.library.StateEnum;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 
 public class Server {
     private static ServerSocket serverSocket;
@@ -34,22 +32,11 @@ public class Server {
                     ObjectOutputStream out = new ObjectOutputStream(connectionSocket.getOutputStream());
                     ObjectInputStream in = new ObjectInputStream(connectionSocket.getInputStream());
                     library = new Library(out, in);
-                    library.makeQuestion();
+                    library.menu();
                 } catch (IOException | ClassNotFoundException e) {
                     throw new RuntimeException(e);
                 }
             }).start();
-        }
-    }
-
-    public static void receiveMessenger(Socket connectionSocket, ObjectInputStream in, ObjectOutputStream out) {
-        try {
-            while (true) {
-                Object receivedObject = in.readObject();
-                System.out.println("Mensagem recebida: " + receivedObject.toString());
-            }
-        } catch (IOException | ClassNotFoundException e) {
-            throw new RuntimeException(e);
         }
     }
 }

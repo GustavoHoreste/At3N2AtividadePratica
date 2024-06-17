@@ -6,6 +6,13 @@ public class Book {
     private String genre;
     private int copies;
 
+    private static final String reset = "\u001B[0m";
+    private static final String bold = "\u001B[1m";
+    private static final String red = "\u001B[31m";
+    private static final String green = "\u001B[32m";
+    private static final String yellow = "\u001B[33m";
+    private static final String cyan = "\u001B[36m";
+
     public Book(String title, String author, String gender, int copies) {
         this.title = title;
         this.author = author;
@@ -13,16 +20,8 @@ public class Book {
         this.copies = copies;
     }
 
-
     @Override
     public String toString() {
-        String reset = "\u001B[0m";
-        String bold = "\u001B[1m";
-        String red = "\u001B[31m";
-        String green = "\u001B[32m";
-        String yellow = "\u001B[33m";
-        String cyan = "\u001B[36m";
-
         return bold + "Title: " + red + this.title + reset + ", " +
                 bold + "Author: " + green + this.author + reset + ", " +
                 bold + "Genre: " + yellow + this.genre + reset + ", " +
@@ -30,23 +29,10 @@ public class Book {
     }
 
     public String toStringName() {
-        String reset = "\u001B[0m";
-        String bold = "\u001B[1m";
-        String red = "\u001B[31m";
-        String cyan = "\u001B[36m";
-
         return bold + "Title: " + red + this.title + reset + ", " +
                 bold + "Copies: " + cyan + this.copies + reset + "\n";
     }
 
-    public boolean quantityCopies() {
-        if (this.copies > 0) {
-            this.copies--;
-            return true;
-        } else {
-            return false;
-        }
-    }
 
 
     //TODO: Gets e Setts

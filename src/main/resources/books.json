@@ -15,7 +15,7 @@
     "title": "Nada Pode Me Ferir",
     "author": "David Goggins",
     "genre": "Autoajuda",
-    "copies": 3
+    "copies": 4
   },
   {
     "title": "O Homem Invisível",
@@ -27,7 +27,7 @@
     "title": "Utopia",
     "author": "Thomas More",
     "genre": "Filosofia",
-    "copies": 12
+    "copies": 10
   },
   {
     "title": "A Revolução dos Bichos",
@@ -57,6 +57,6 @@
     "title": "O Guia do Mochileiro das Galáxias",
     "author": "Douglas Adams",
     "genre": "Ficção Científica",
-    "copies": 5
+    "copies": 3
   }
 ]
