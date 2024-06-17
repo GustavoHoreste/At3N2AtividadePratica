@@ -2,9 +2,7 @@ package shared.library;
 
 public enum StateEnum {
     LISTAR,
-    ALUGAR,
+    ALUGUAR,
     DEVOLVER,
-    CADASTRAR,
-    USER_BOOKS,
-    SAIR
+    CADASTRAR
 }
