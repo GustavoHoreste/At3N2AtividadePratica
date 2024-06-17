@@ -39,7 +39,7 @@ public class Library {
                 .append("3. Devolver livro\n")
                 .append("4. Cadastrar livro\n")
                 .append("5. livros Aluagados\n")
-                .append("0. Sair\n")
+                .append("6. Sair\n")
                 .append("Opção: ");
 
         sendMessenger(questions.toString());
@@ -47,11 +47,11 @@ public class Library {
         do {
             choice = this.reciveMensager();
 
-            if (choice.isEmpty() || !choice.matches("[0-5]")) {
+            if (choice.isEmpty() || !choice.matches("[1-6]")) {
                 System.out.println("Opção inválida: Repetindo pergunta");
                 this.sendMessenger("Opção inválida, por favor, escreva uma Opção válida.");
             }
-        } while (choice.isEmpty() || !choice.matches("[0-5]"));
+        } while (choice.isEmpty() || !choice.matches("[1-6]"));
 
         int valurConverted = Integer.parseInt(choice);
         this.startAction(StateEnum.values()[valurConverted - 1]);
@@ -85,7 +85,7 @@ public class Library {
             case SAIR -> {
                 System.out.println("Sair");
                 sendMessenger("Saindo");
-                return;
+                System.exit(0);
             }
         }
 
