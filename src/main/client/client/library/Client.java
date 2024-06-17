@@ -14,7 +14,8 @@ public class Client {
 
     public static void main(String[] args) {
         try{
-            socket = new Socket("localhost", 7777);
+            socket = new Socket("localhost", 3333);
+            recieveMessage();
             sendMessage();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
@@ -43,12 +44,24 @@ public class Client {
         out = new ObjectOutputStream(socket.getOutputStream());
         while (true){
             String mensager = writeMessage();
-            out.writeObject(mensager);
+            out.writeObject(mensager);//Enviar mensagem para o servidor.
         }
     }
 
-    public static void recieveMessage(String message) {
+    public static void recieveMessage() throws IOException {
+        new Thread(() -> { // Thread que recebe os dados do server.
+            while (true){
+                try {
+                    in = new ObjectInputStream(socket.getInputStream());
+                    System.out.println(in.readObject().toString());
 
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }).start();
     }
 }
 

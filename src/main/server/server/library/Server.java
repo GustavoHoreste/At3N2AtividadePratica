@@ -7,18 +7,19 @@ import shared.library.JsonModel;
 import java.awt.event.TextEvent;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+
 
 public class Server {
     private static ServerSocket serverSocket;
 
     public static void main(String[] args) throws IOException {
         try {
-            serverSocket = new ServerSocket(7777);
+            serverSocket = new ServerSocket(3333);
             System.out.println("Server started on port: " + serverSocket.getLocalPort());
             startServer();
-
         }catch (IOException e) {
             System.out.println("Server failed to start on port: " + serverSocket.getLocalPort());
             e.printStackTrace();
@@ -27,13 +28,11 @@ public class Server {
     }
 
     public static void startServer() throws IOException {
-//        while (true){
         Socket connectionSocket = serverSocket.accept();
         new Thread(() -> {
             System.out.println("Thraed criado\nServer accepted connection from: " + connectionSocket.getRemoteSocketAddress());
             receiveMessenger(connectionSocket);
         }).start();
-//        }
     }
 
     public static  void stopServer() throws IOException {
@@ -51,11 +50,19 @@ public class Server {
                     break; // Encerra o loop se não houver mais dados para ler
                 }
                 System.out.println("Mensagem recebida: " + receivedObject.toString());
+
+                sendMessenger(connectionSocket);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static void sendMessenger(Socket connectionSocket) throws IOException {
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(connectionSocket.getOutputStream());
+
+        objectOutputStream.writeObject("\nRecebi a mensagem cara chegou minha resposta ai?"); //enviando mensagem para o client
     }
 }
