@@ -1,6 +1,6 @@
-package server.biblioteca;
+package server.library;
 
-public class Main {
+public class Server {
     public static void main(String[] args) {
         System.out.println("Hello world!");
     }
