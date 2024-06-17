@@ -1,5 +1,7 @@
 package client.library;
 
+import shared.library.StateEnum;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -11,12 +13,16 @@ public class Client {
     private static Socket socket;
     private static ObjectOutputStream out;
     private static ObjectInputStream in;
+    private static volatile boolean running;
 
     public static void main(String[] args) {
-        try{
-            socket = new Socket("localhost", 3333);
-            recieveMessage();
-            sendMessage();
+        try {
+            running = true;
+            socket = new Socket("localhost", 7777);
+            out = new ObjectOutputStream(socket.getOutputStream());
+            in = new ObjectInputStream(socket.getInputStream());
+
+            new Thread(Client::recieveMessage).start();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
@@ -26,43 +32,39 @@ public class Client {
 
     public static String writeMessage() {
         Scanner scanner = new Scanner(System.in);
-        String message;
-
-        do {
-            System.out.print("Escreva uma mensagem: ");
-            message = scanner.nextLine();
-
-            if (message.isEmpty()) {
-                System.out.println("Mensagem inválida, por favor, escreva uma mensagem válida.");
-            }
-        }while (message.isEmpty());
-
+        String message = scanner.nextLine();
         return message;
     }
 
     public static void sendMessage() throws IOException {
-        out = new ObjectOutputStream(socket.getOutputStream());
-        while (true){
-            String mensager = writeMessage();
-            out.writeObject(mensager);//Enviar mensagem para o servidor.
+        Scanner scanner = new Scanner(System.in);
+        String message = scanner.nextLine();
+        out.writeObject(message);
+        running = false;
+    }
+
+    public static void recieveMessage() {
+        while (true) {
+            try {
+                Object mensager = in.readObject();
+                System.out.println(mensager);
+                if (mensager.toString().contains("Saindo")) {
+                    System.out.print("Saindo");
+                    stopClient();
+                    break;
+                } else if (mensager != null && !mensager.toString().contains("=") && !mensager.toString().contains("Title")) {
+                    sendMessage();
+                }
+            } catch (IOException | ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
-    public static void recieveMessage() throws IOException {
-        new Thread(() -> { // Thread que recebe os dados do server.
-            while (true){
-                try {
-                    in = new ObjectInputStream(socket.getInputStream());
-                    System.out.println(in.readObject().toString());
-
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }).start();
+    public static void stopClient() throws IOException {
+        in.close();
+        out.close();
+        socket.close();
+        System.exit(0);
     }
 }
-
-
