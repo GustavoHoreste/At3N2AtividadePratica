@@ -2,7 +2,7 @@
 > Usamos o IntelliJ IDEA para fazer o projeto
 
 >[!NOTE]
-> O servidor estas rodando na porta 7777
+> O servidor esta rodando na porta 7777
 ## Colaboradores
 
 - ### Maria Clara Fernandes Rangel (Matrícula: UC22102645)
