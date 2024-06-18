@@ -1,5 +1,5 @@
 >[!NOTE]
-> Usamos o IntelliJ IDEA o projeto inteiro
+> Usamos o IntelliJ IDEA para fazer o projeto
 
 >[!NOTE]
 > O servidor estas rodando na porta 7777
