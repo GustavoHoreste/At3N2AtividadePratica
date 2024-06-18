@@ -1,3 +1,7 @@
+>[!NOTE]
+> Usamos o IntelliJ IDEA o projeto inteiro
+>[!NOTE]
+> O servidor estas rodando na porta 7777
 ## Colaboradores
 
 - ### Maria Clara Fernandes Rangel (Matrícula: UC22102645)
